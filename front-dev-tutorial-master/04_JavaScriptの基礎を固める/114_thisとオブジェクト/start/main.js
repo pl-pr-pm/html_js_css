@@ -6,7 +6,7 @@ const obj = {
         const fn = function() {
             console.log(this);
         };
-        window.setTimeout(fn);  
+        window.setTimeout(fn); 
     }
 }
 

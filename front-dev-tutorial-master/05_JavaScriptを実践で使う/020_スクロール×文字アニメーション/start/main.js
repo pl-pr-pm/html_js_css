@@ -1,43 +1,45 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const ta = new TextAnimation('.animate-title');
-    ta.animate();
+    
+    const cb = (el, isIntersecting) => {
+        if (isIntersecting) {
+          const ta = new TextAnimation(el);
+          ta.animate();
+        }
+    }
+
+    const scroll = new scrollObserver('.animate-title', cb, {once: false});
 });
 
-// text-animation.jsに以下のコードをカット＆ペースト
-// してファイル分割をしましょう。
-class TextAnimation {
-    constructor(el) {
-        this.DOM = {};
-        this.DOM.el = document.querySelector(el);
-        this.chars = this.DOM.el.innerHTML.trim().split("");
-        this.DOM.el.innerHTML = this._splitText();
-    }
-    _splitText() {
-        return this.chars.reduce((acc, curr) => {
-            curr = curr.replace(/\s+/, '&nbsp;');
-            return `${acc}<span class="char">${curr}</span>`;
-        }, "");
-    }
-    animate() {
-        this.DOM.el.classList.toggle('inview');
-    }
-}
-class TweenTextAnimation extends TextAnimation {
-    constructor(el) {
-        super(el);
-        this.DOM.chars = this.DOM.el.querySelectorAll('.char');
-    }
-    
-    animate() {
-        this.DOM.el.classList.add('inview');
-        this.DOM.chars.forEach((c, i) => {
-            TweenMax.to(c, .6, {
-                ease: Back.easeOut,
-                delay: i * .05,
-                startAt: { y: '-50%', opacity: 0},
-                y: '0%',
-                opacity: 1
-            });
-        });
-    }
+class scrollObserver {
+  constructor (target, cb, options) {
+    this.els = document.querySelectorAll(target);
+    const defaultOptions = {
+      root: null,
+      rootMargin: "0px",
+      once: true,
+    };
+    this.options = Object.assign(this.defaultOptions, options);
+    this.cb = cb;
+    this._init();
+  }
+  _init() {
+    const callback = (entries, observer) =>{
+      entries.forEach(entry => {
+        if(entry.isIntersecting) {
+          this.cb(entry.target, true);
+          if(this.options.once) {
+          observer.unobserve(entry.target);
+          }
+        } else {
+          this.cb(entry.target, false);
+        }
+      });
+    };
+    this.io = new IntersectionObserver(callback.bind(this), this.options);
+    this.els.forEach(el => this.io.observe(el));
+  }
+
+  destroy() {
+    this.io.disconnect();
+  }
 }

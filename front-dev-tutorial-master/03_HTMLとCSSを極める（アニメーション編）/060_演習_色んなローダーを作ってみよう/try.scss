@@ -1,6 +1,11 @@
 @import "mixin";
-
+$cBlack: black;
 .try {
   /** ここに記述しよう */
-  
+  .spinner {
+
+
+    // animationをmixinを利用して持ってきている
+    // 定義しているkeyframesをanimationで指定している
+  }
 }
